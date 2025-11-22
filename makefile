@@ -219,10 +219,9 @@ ios-arm64: ios-arm64-debug ios-arm64-release ## Build - iOS ARM64 Debug and Rele
 
 .build/projects/gmake-ios-aarch64:
 	$(GENIE) --with-tools --with-combined-examples --with-shared-lib --gcc=osx-arm64 gmake
-	rm -rf .build/projects/gmake-osx-arm64/*
-	cp -R iOSPatchShadercCompile/* .build/projects/gmake-osx-arm64/
-	ls .build/projects/gmake-osx-arm64
-	mv .build/projects/gmake-osx-arm64 .build/projects/gmake-ios-aarch64
+	@rm -rf .build/projects/gmake-osx-arm64/*
+	@cp -R iOSPatchShadercCompile/* .build/projects/gmake-osx-arm64/
+	@mv .build/projects/gmake-osx-arm64 .build/projects/gmake-ios-aarch64
 ios-aarch64-debug: .build/projects/gmake-ios-aarch64
 	$(MAKE) -R -C .build/projects/gmake-ios-aarch64 config=debug
 ios-aarch64-release: .build/projects/gmake-ios-aarch64
