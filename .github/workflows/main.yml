@@ -7,6 +7,7 @@ concurrency:
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   mingw:
@@ -148,6 +149,56 @@ jobs:
           files: shaderc-osx-x64.zip
           tag_name: binaries
           fail_on_unmatched_files: true
+
+  ios:
+    strategy:
+      fail-fast: true
+      matrix:
+        include: [
+          { config: release, binsuffix: Release },
+        ]
+    name: ios-aarch64-${{ matrix.config }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout bgfx
+        uses: actions/checkout@v4
+        with:
+          path: bgfx
+      - name: Checkout bx
+        uses: actions/checkout@v4
+        with:
+          repository: bkaradzic/bx
+          path: bx
+          fetch-depth: 0
+      - run: cd bx && git checkout 198cd12 || cd ..
+      - name: Checkout bimg
+        uses: actions/checkout@v4
+        with:
+          repository: bkaradzic/bimg
+          path: bimg
+      - name: Build
+        run: |
+          cd bgfx
+          make -j$(sysctl -n hw.physicalcpu) shaderc \
+            BUILD_PROJECT_DIR=gmake-ios-aarch64 \
+            BUILD_OUTPUT_DIR=ios-aarch64 \
+            CFLAGS="-isysroot $(xcrun --sdk iphoneos --show-sdk-path) -arch arm64 -target arm64-apple-ios14.0 -miphoneos-version-min=14.0" \
+            CXXFLAGS="-isysroot $(xcrun --sdk iphoneos --show-sdk-path) -arch arm64 -target arm64-apple-ios14.0 -miphoneos-version-min=14.0" \
+            LDFLAGS="-isysroot $(xcrun --sdk iphoneos --show-sdk-path)"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: shaderc-ios
+          path: ./bgfx/.build/ios-aarch64/bin/shaderc${{ matrix.binsuffix }}
+      - name: Zip binary
+        run: zip -j shaderc-ios-aarch64.zip ./bgfx/.build/ios-aarch64/bin/shaderc${{ matrix.binsuffix }}
+      - name: Publish binary
+        uses: softprops/action-gh-release@v2
+        with:
+          files: shaderc-ios-aarch64.zip
+          tag_name: binaries
+          fail_on_unmatched_files: true
+
   android:
     strategy:
       fail-fast: true
