@@ -178,6 +178,7 @@ jobs:
           path: bimg
       - name: Build
         run: |
+          brew install ldid
           cd bgfx
           make -j$(sysctl -n hw.physicalcpu) shaderc \
             BUILD_PROJECT_DIR=gmake-ios-aarch64 \
